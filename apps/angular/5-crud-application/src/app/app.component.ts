@@ -1,13 +1,14 @@
+import { AsyncPipe } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { Todo } from './todo.model';
 import { TodoService } from './todo.service';
 
 @Component({
-  imports: [],
+  imports: [AsyncPipe],
   selector: 'app-root',
   template: `
     <ul>
-      @for (todo of todos; track todo.id) {
+      @for (todo of todos | async; track todo.id) {
         <li>
           {{ todo.title }}
           <button (click)="update(todo)">Update</button>
@@ -16,22 +17,18 @@ import { TodoService } from './todo.service';
     </ul>
   `,
   styles: [],
+  standalone: true,
 })
 export class AppComponent implements OnInit {
   private todoService = inject(TodoService);
 
-  todos!: Todo[];
+  todos = this.todoService.todos$;
 
   ngOnInit(): void {
-    this.todoService.get().subscribe((todos) => {
-      this.todos = todos;
-    });
+    this.todoService.load();
   }
 
   update(todo: Todo) {
-    this.todoService.update(todo).subscribe((todoUpdated: Todo) => {
-      this.todos = [...this.todos];
-      this.todos[todoUpdated.id - 1] = todoUpdated;
-    });
+    this.todoService.update(todo);
   }
 }
