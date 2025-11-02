@@ -12,6 +12,7 @@ import { TodoService } from './todo.service';
         <li>
           {{ todo.title }}
           <button (click)="update(todo)">Update</button>
+          <button (click)="remove(todo)">Delete</button>
         </li>
       }
     </ul>
@@ -30,5 +31,9 @@ export class AppComponent implements OnInit {
 
   update(todo: Todo) {
     this.todoService.update(todo);
+  }
+
+  remove(todo: Todo) {
+    this.todoService.delete(todo);
   }
 }

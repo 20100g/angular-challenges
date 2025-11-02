@@ -18,6 +18,12 @@ export class TodoService {
     });
   }
 
+  delete(todo: Todo) {
+    return this.http.delete<Todo>(`${baseUrl}/${todo.id}`).subscribe((_) => {
+      this.#todos.next(this.#todos.value.filter((t) => t.id !== todo.id));
+    });
+  }
+
   update(todo: Todo) {
     return this.http
       .put<Todo>(
