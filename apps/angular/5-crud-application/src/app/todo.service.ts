@@ -11,20 +11,27 @@ export class TodoService {
   private http = inject(HttpClient);
   #todos = new BehaviorSubject<Todo[]>([]);
   public todos$ = this.#todos.asObservable();
+  #isLoading = new BehaviorSubject<boolean>(false);
+  public isLoading$ = this.#isLoading.asObservable();
 
   load() {
+    this.#isLoading.next(true);
     return this.http.get<Todo[]>(`${baseUrl}`).subscribe((todos) => {
       this.#todos.next(todos);
+      this.#isLoading.next(false);
     });
   }
 
   delete(todo: Todo) {
+    this.#isLoading.next(true);
     return this.http.delete<Todo>(`${baseUrl}/${todo.id}`).subscribe((_) => {
       this.#todos.next(this.#todos.value.filter((t) => t.id !== todo.id));
+      this.#isLoading.next(false);
     });
   }
 
   update(todo: Todo) {
+    this.#isLoading.next(true);
     return this.http
       .put<Todo>(
         `${baseUrl}/${todo.id}`,
@@ -41,9 +48,12 @@ export class TodoService {
         },
       )
       .subscribe((todoUpdated: Todo) => {
-        const t = [...this.#todos.value];
-        t[todoUpdated.id - 1] = todoUpdated;
-        this.#todos.next(t);
+        this.#todos.next(
+          this.#todos.value.map((t) =>
+            t.id === todoUpdated.id ? todoUpdated : t,
+          ),
+        );
+        this.#isLoading.next(false);
       });
   }
 }
